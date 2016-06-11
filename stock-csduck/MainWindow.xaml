@@ -7,6 +7,28 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        <Button Name="search" Click="search_Click" Content="Click Here" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="계좌정보" Grid.Column="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />                    
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="잔고:" />
+                <Label Grid.Row="0" Grid.Column="1" Content="0원" />
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="거래결과" Grid.Column="1">
+        </GroupBox>
+        <GroupBox Header="주문" Grid.Column="2">
+            <Button Name="btnSearch" Click="btnSearch_Click"  Content="조회"/>
+        </GroupBox>
     </Grid>
 </Window>

@@ -56,10 +56,23 @@ namespace stock_csduck
 
         private void search_Click(object sender, RoutedEventArgs e)
         {
+            
+        }
+
+        
+        /// <summary>
+        /// 모든 계좌 정보를 얻는다.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnSearch_Click(object sender, RoutedEventArgs e)
+        {
             //계좌번호 얻기                        
             Console.WriteLine(m_TdUtil.AccountNumber.ToString());
             m_arAccount = (Array)m_TdUtil.AccountNumber;
             Console.WriteLine(m_arAccount.GetValue(0));
+
+            // 잔고
         }
     }
 }

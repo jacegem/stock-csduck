@@ -12,8 +12,7 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
-        <GroupBox Header="계좌정보" Grid.Column="0">
+        </Grid.ColumnDefinitions>        <GroupBox Header="계좌정보" Grid.Column="0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -38,10 +37,13 @@
         </GroupBox>
         <GroupBox Header="주문" Grid.Column="2">
             <StackPanel >
-                <Button Name="btnSearch" Click="btnSearch_Click"  Content="조회"/>
                 <Button Name="CpTdNew5331A" Click="CpTdNew5331A_Click" Content="매수주문 가능" />
                 <Button Name="CpTdNew5331B" Click="CpTdNew5331B_Click" Content="매도주문 가능" />
-                
+                <Button Name="btnStockCode" Click="btnStockCode_Click" Content="주식목록 가져오기" />
+                <ComboBox Name="cbStockCode" 
+                          DisplayMemberPath="name" 
+                          SelectedValuePath="code"/>
+                <Button Name="btnStockMst" Click="btnStockMst_Click" Content="거래가격 가져오기" />
             </StackPanel>
         </GroupBox>
     </Grid>

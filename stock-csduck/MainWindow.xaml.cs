@@ -18,6 +18,8 @@ using System.Windows.Shapes;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Collections;
+using System.ComponentModel;
+using System.Windows.Threading;
 
 namespace stock_csduck
 {
@@ -119,8 +121,12 @@ namespace stock_csduck
             String callerText = "[" + caller + "]";
             String keyText = "[" + key + "]";
             String text = timeText + callerText + keyText + ":" + val + "\n";
-            mTextarea.AppendText(text);            
-            mTextarea.ScrollToEnd();
+
+            Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
+            {
+                mTextarea.AppendText(text);
+                mTextarea.ScrollToEnd();
+            }));
         }
 
         /*
@@ -174,32 +180,87 @@ namespace stock_csduck
         {
             Button btn = (Button)sender;
             btn.IsEnabled = false;
+
+            BackgroundWorker _backgroundWorker = new BackgroundWorker();
+            // BackgroundWorker의 이벤트 처리기
+            _backgroundWorker.DoWork += _backgroundWorker_DoWork;
+            _backgroundWorker.RunWorkerCompleted += _backgroundWorker_RunWorkerCompleted;
+            _backgroundWorker.WorkerReportsProgress = true;
+            _backgroundWorker.ProgressChanged += new ProgressChangedEventHandler(_backgroundWorker_ProgressChanged);
+            // BackgroundWorker 실행
+            // 매개변수를 넣어 실행시키는 것이 가능합니다.
+            // 매개변수라 다수인경우, 배열을 사용하면 됩니다.
+            _backgroundWorker.RunWorkerAsync();
+
+
+          
+
             
+        }
+        void _backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            // Do something
+            Object argument = e.Argument;
+            // BackgroundWorker에서 수행할 일을 정의합니다.
             IEnumerable<Stock> stockList = StockManager.getStockList().Cast<Stock>();
+            int cnt = 1;
             foreach (Stock st in stockList)
-            {                
-                setStatus("조회중", st.name);                
+            {
+                setStatus("조회중" + "[" + cnt++ + "]", st.name);
+                RequestCountUtil.add();
+
                 setPastPrice(st.code);
                 calculateAvg(st.code);
                 evaluateBuy(st.code);
 
-                if (st.buyPoint > 7) {
+                if (st.buyPoint > 7)
+                {
                     addMsg("name", st.name);
                     addMsg("buyPoint", st.buyPoint);
-                    StockPrice sp =  st.getLastPrice();
+                    StockPrice sp = st.getLastPrice();
                     addMsg("rate5", sp.rate5);
                 }
-
-                Delay(300);
+            }
+        }
+        void _backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            // ProgressChanged
+            // 진행률에 변화가 있을때 이벤트가 발생합니다.
+            // 현재 얼마나 진행했는지 보여주는 코드를
+            // 이곳에 작성합니다.
+        }
+        // Completed Method
+        void _backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Cancelled)
+            {
+                setStatus("Cancelled", "_backgroundWorker");                
+            }
+            else if (e.Error != null)
+            {
+                setStatus("Exception Thrown", "_backgroundWorker");
+            }
+            else
+            {
+                // Do Something
+                // 일이 모두 마쳤을때 수행되어야할
+                // 코드를 이곳에 정의합니다.                
+                setStatus("Completed", "_backgroundWorker");
             }
 
+            Button btn = (Button)sender;
             btn.IsEnabled = true;
         }
+
 
         private void setStatus(string key, object val)
         {
             String now = System.DateTime.Now.ToString("MM-dd HH:mm:ss");
-            txStatus.Text = "[" + now + "]" + "[" + key + "]" + " : " + val;
+            Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
+            {   
+                txStatus.Text = "[" + now + "]" + "[" + key + "]" + " : " + val;
+            }));
+            
         }
 
         private void setPastPrice(object code)
@@ -239,18 +300,7 @@ namespace stock_csduck
             }
         }
 
-        private static DateTime Delay(int MS)
-        {
-            DateTime ThisMoment = DateTime.Now;
-            TimeSpan duration = new TimeSpan(0, 0, 0, 0, MS);
-            DateTime AfterWards = ThisMoment.Add(duration);
-            while (AfterWards >= ThisMoment)
-            {
-                //System.Windows.Forms.Application.DoEvents();
-                ThisMoment = DateTime.Now;
-            }
-            return DateTime.Now;
-        }
+
 
         private void evaluateBuy(object code)
         {

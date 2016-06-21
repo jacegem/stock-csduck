@@ -55,12 +55,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="RequestCountUtil.cs" />
+    <Compile Include="util\RequestCountUtil.cs" />
     <Compile Include="util\AvgUtil.cs" />
     <Compile Include="util\EvaluateUtil.cs" />
-    <Compile Include="Stock.cs" />
-    <Compile Include="StockManager.cs" />
-    <Compile Include="StockPrice.cs" />
+    <Compile Include="stock\Stock.cs" />
+    <Compile Include="stock\StockManager.cs" />
+    <Compile Include="stock\StockPrice.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

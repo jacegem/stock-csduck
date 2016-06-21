@@ -102,16 +102,8 @@ namespace stock_csduck
             CpTdNew5331B.IsEnabled = true;
 
             Object cnt = m_CpTdNew5331B.GetHeaderValue(0);
-            addMsgCnt(cnt);
-
-            
+            addMsg("cnt", cnt);            
         }
-
-
-        public void addMsgCnt(Object cnt) {
-            addMsg("결과 갯수:" + cnt);
-        }
-
 
         // https://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.callermembernameattribute(v=vs.110).aspx
         public void addMsg(String key="", Object val=null, [CallerMemberName]string caller = "") {
@@ -169,6 +161,8 @@ namespace stock_csduck
                 //addMsg("code", code);
                 //addMsg("name", name);
                 //addMsg("fullCode", fullCode);
+                // todo: ^대신[a-z]{2}\d+ 제외
+                // todo : ^KODEX 제외
                 StockManager.addStock(code, name, fullCode);
             }
 

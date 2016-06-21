@@ -191,12 +191,8 @@ namespace stock_csduck
             // 매개변수를 넣어 실행시키는 것이 가능합니다.
             // 매개변수라 다수인경우, 배열을 사용하면 됩니다.
             _backgroundWorker.RunWorkerAsync();
-
-
-          
-
-            
         }
+
         void _backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             // Do something
@@ -248,10 +244,13 @@ namespace stock_csduck
                 setStatus("Completed", "_backgroundWorker");
             }
 
-            Button btn = (Button)sender;
-            btn.IsEnabled = true;
+            enableButton();
         }
 
+        private void enableButton()
+        {
+            btnStockMst.IsEnabled = true;
+        }
 
         private void setStatus(string key, object val)
         {

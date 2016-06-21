@@ -67,6 +67,9 @@ namespace stock_csduck
             return sum / q.Count;
         }
 
-
+        internal int[] getAvg()
+        {
+            return new int[] { get5(), get20(), get60(), get120() };
+        }
     }
 }

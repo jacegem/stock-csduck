@@ -55,7 +55,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="AvgUtil.cs" />
+    <Compile Include="util\AvgUtil.cs" />
+    <Compile Include="util\EvaluateUtil.cs" />
     <Compile Include="Stock.cs" />
     <Compile Include="StockManager.cs" />
     <Compile Include="StockPrice.cs" />

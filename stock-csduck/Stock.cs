@@ -9,6 +9,8 @@ namespace stock_csduck
         public object code { get; set; }
         public object name { get; set; }
         private object fullCode;
+        public int buyPoint { get; set; }
+        public int sellPoint { get; set; }
 
         public SortedList stockPriceList;
         
@@ -39,10 +41,7 @@ namespace stock_csduck
             for (int i = 0; i < cnt; i++) {
                 StockPrice stockPrice = (StockPrice)stockPriceList.GetByIndex(i);
                 avgUtil.add(stockPrice);
-                stockPrice.setAvg120(avgUtil.get120());
-                stockPrice.setAvg60(avgUtil.get60());
-                stockPrice.setAvg20(avgUtil.get20());
-                stockPrice.setAvg5(avgUtil.get5());
+                stockPrice.setAvg(avgUtil.getAvg());
             }
         }
 
@@ -51,17 +50,16 @@ namespace stock_csduck
             return stockPriceList;
         }
 
-        internal void evaluation()
+        internal void evaluateBuy()
+        {
+            EvaluateUtil eu = new EvaluateUtil(stockPriceList);
+            buyPoint = eu.isGoodToBuy();            
+        }
+
+        internal StockPrice getLastPrice()
         {
             int cnt = stockPriceList.Count;
-            // 5일선이 20일 선보다 아래에 있는가. 
-            // 순차적으로 되어 있는가.
-            StockPrice last = (StockPrice)stockPriceList.GetByIndex(cnt-1);
-            if (last.avg5 < last.avg20
-                && last.avg20 < last.avg60
-                && last.avg60 < last.avg120) {
-                // 사야 한다. 
-            }
+            return (StockPrice)stockPriceList.GetByIndex(cnt-1);
         }
     }
 }

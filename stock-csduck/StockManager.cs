@@ -44,10 +44,10 @@ namespace stock_csduck
             stock.calculateAvg();
         }
 
-        internal static void evaluation(object code)
+        internal static void evaluateBuy(object code)
         {
             Stock stock = stockDic[code];
-            stock.evaluation();
+            stock.evaluateBuy();
         }
     }
 }

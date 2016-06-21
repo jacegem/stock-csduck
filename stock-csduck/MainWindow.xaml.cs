@@ -73,6 +73,12 @@ namespace stock_csduck
 
         }
 
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            App.Current.Shutdown();
+        }
+
         private void CpFConclusion_OnReceived()
         {
             Console.WriteLine("CpFConclusion_OnReceived");
@@ -108,7 +114,7 @@ namespace stock_csduck
         // https://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.callermembernameattribute(v=vs.110).aspx
         public void addMsg(String key="", Object val=null, [CallerMemberName]string caller = "") {
             // 잔고
-            String now = System.DateTime.Now.ToString("MM-dd hh:mm:ss");
+            String now = System.DateTime.Now.ToString("MM-dd HH:mm:ss");
             String timeText = "[" + now + "]";
             String callerText = "[" + caller + "]";
             String keyText = "[" + key + "]";
@@ -145,10 +151,12 @@ namespace stock_csduck
 
         private void btnStockCode_Click(object sender, RoutedEventArgs e)
         {
-            int cnt = m_CpStockCode.GetCount();
+            short cnt = m_CpStockCode.GetCount();
             addMsg("StockCodeCount", cnt.ToString());
 
-            for (short i = 0; i < cnt; i++) {
+            //for (short i = 0; i < cnt; i++) {
+            for (short i = (short)(cnt - 1); i >= 0 ; i--)
+            {
                 Object code = m_CpStockCode.GetData(0, i);
                 Object name = m_CpStockCode.GetData(1, i);
                 Object fullCode = m_CpStockCode.GetData(2, i);
@@ -164,68 +172,108 @@ namespace stock_csduck
 
         private void btnStockMst_Click(object sender, RoutedEventArgs e)
         {
-            object code = cbStockCode.SelectedValue;
-            m_StockMst.SetInputValue(0, code);
-            m_StockMst.BlockRequest();
-            object price = m_StockMst.GetHeaderValue(11);
+            Button btn = (Button)sender;
+            btn.IsEnabled = false;
+            
+            IEnumerable<Stock> stockList = StockManager.getStockList().Cast<Stock>();
+            foreach (Stock st in stockList)
+            {                
+                setStatus("조회중", st.name);                
+                setPastPrice(st.code);
+                calculateAvg(st.code);
+                evaluateBuy(st.code);
 
-            addMsg("price", price);
+                if (st.buyPoint > 7) {
+                    addMsg("name", st.name);
+                    addMsg("buyPoint", st.buyPoint);
+                    StockPrice sp =  st.getLastPrice();
+                    addMsg("rate5", sp.rate5);
+                }
 
+                Delay(300);
+            }
+
+            btn.IsEnabled = true;
+        }
+
+        private void setStatus(string key, object val)
+        {
+            String now = System.DateTime.Now.ToString("MM-dd HH:mm:ss");
+            txStatus.Text = "[" + now + "]" + "[" + key + "]" + " : " + val;
+        }
+
+        private void setPastPrice(object code)
+        {
             m_StockChart.SetInputValue(0, code);    // 종목코드
             m_StockChart.SetInputValue(1, '2'); // 개수로 요청
             m_StockChart.SetInputValue(4, 120);  // 요청개수
-            
+
             // 0: 날짜
             // 1: 시가
             // 5: 종가
             // 8: 거래량
-            object[] types= { 0, 1, 5, 8 };
+            object[] types = { 0, 1, 5, 8 };
             m_StockChart.SetInputValue(5, types);   // 요청 데이터 타입
 
             m_StockChart.SetInputValue(6, 'D');   // 챠트 구분
             m_StockChart.BlockRequest();
 
             object cnt = m_StockChart.GetHeaderValue(3);
-            addMsg("cnt", cnt);
+            //addMsg("cnt", cnt);
 
-            for (int i = 0; i < Convert.ToInt16(cnt); i++) {
+            for (int i = 0; i < Convert.ToInt16(cnt); i++)
+            {
                 object date = m_StockChart.GetDataValue(0, i);
                 object priceStart = m_StockChart.GetDataValue(1, i);
                 object priceEnd = m_StockChart.GetDataValue(2, i);
                 object volumn = m_StockChart.GetDataValue(3, i);
-                addMsg("date", date);
-                addMsg("priceStart", priceStart);
-                addMsg("priceEnd", priceEnd);
-                addMsg("volumn", volumn);
+                //addMsg("date", date);
+                //addMsg("priceStart", priceStart);
+                //addMsg("priceEnd", priceEnd);
+                //addMsg("volumn", volumn);
                 StockPrice stockPrice = new StockPrice(date, priceStart, priceEnd, volumn);
 
                 StockManager.addStockPrice(code, stockPrice);
+
+                
             }
-
-            calculateAvg(code);
-            evaluation(code);
-
-
-            IEnumerable<Stock> stockList = StockManager.getStockList().Cast<Stock>();
-            foreach (Stock st in stockList) {
-                SortedList sl = st.getStockPriceList();
-                int listCnt = sl.Count;
-
-                for (int i = 0; i < listCnt; i++) {
-                    StockPrice sp = (StockPrice)sl.GetByIndex(i);
-                    addMsg("date", sp.date);
-                    addMsg("avg120", sp.avg120);
-                    addMsg("avg60", sp.avg60);
-                    addMsg("avg20", sp.avg20);
-                    addMsg("avg5", sp.avg5);
-                }            
-            }
-            
         }
 
-        private void evaluation(object code)
+        private static DateTime Delay(int MS)
         {
-            StockManager.evaluation(code);
+            DateTime ThisMoment = DateTime.Now;
+            TimeSpan duration = new TimeSpan(0, 0, 0, 0, MS);
+            DateTime AfterWards = ThisMoment.Add(duration);
+            while (AfterWards >= ThisMoment)
+            {
+                //System.Windows.Forms.Application.DoEvents();
+                ThisMoment = DateTime.Now;
+            }
+            return DateTime.Now;
+        }
+
+        private void evaluateBuy(object code)
+        {
+            StockManager.evaluateBuy(code);
+
+            //IEnumerable<Stock> stockList = StockManager.getStockList().Cast<Stock>();
+            //foreach (Stock st in stockList)
+            //{
+            //    SortedList sl = st.getStockPriceList();
+            //    int listCnt = sl.Count;
+
+            //    for (int i = 0; i < listCnt; i++)
+            //    {
+            //        StockPrice sp = (StockPrice)sl.GetByIndex(i);
+            //        addMsg("date", sp.date);
+            //        addMsg("avg120", sp.avg120);
+            //        addMsg("avg60", sp.avg60);
+            //        addMsg("avg20", sp.avg20);
+            //        addMsg("avg5", sp.avg5);
+            //    }
+
+            //    addMsg("buyPoint", st.buyPoint);
+            //}
         }
 
         private void calculateAvg(object code)

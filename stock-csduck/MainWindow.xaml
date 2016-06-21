@@ -8,11 +8,16 @@
         Title="MainWindow" Height="350" Width="525"
         WindowState="Normal">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>        <GroupBox Header="계좌정보" Grid.Column="0">
+        </Grid.ColumnDefinitions>        
+        <GroupBox Header="계좌정보" Grid.Column="0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -28,12 +33,13 @@
                 <Label Grid.Row="1" Grid.Column="1" Name="mAvailableDeposits"/>
             </Grid>
         </GroupBox>
-        <GroupBox Header="거래결과" Grid.Column="1">
+        <GroupBox Header="거래결과" Grid.Column="1">            
             <TextBox Name="mTextarea" TextWrapping="Wrap" AcceptsReturn="True"
                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      ScrollViewer.CanContentScroll="True"
-                     MaxLength="500" IsReadOnly="True"/>     
+                     MaxLength="500" IsReadOnly="True"/>
+           
         </GroupBox>
         <GroupBox Header="주문" Grid.Column="2">
             <StackPanel >
@@ -43,8 +49,15 @@
                 <ComboBox Name="cbStockCode" 
                           DisplayMemberPath="name" 
                           SelectedValuePath="code"/>
-                <Button Name="btnStockMst" Click="btnStockMst_Click" Content="거래가격 가져오기" />
+                <Button Name="btnStockMst" Click="btnStockMst_Click" Content="거래가격 가져오기" />                
             </StackPanel>
         </GroupBox>
+        <DockPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
+            <StatusBar DockPanel.Dock="Bottom">
+                <StatusBarItem>
+                    <TextBlock Name="txStatus" />
+                </StatusBarItem>
+            </StatusBar>
+        </DockPanel>
     </Grid>
 </Window>

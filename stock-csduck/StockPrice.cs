@@ -6,14 +6,17 @@ namespace stock_csduck
     {
         public object priceEnd { get; set; }
         public object date { get; set; }
-        private object priceStart;
-        private object volumn;
+        public object priceStart;
+        public object volumn { get; set; }
         public int avg120 { get; set; }
         public int avg60 { get; set; }
         public int avg20 { get; set; }
         public int avg5 { get; set; }
+        public double rate5 { get; set; }
+        public double rate20 { get; set; }
+        public double rate60 { get; set; }
 
-   
+
         public StockPrice(object date, object priceStart, object priceEnd, object volumn)
         {
             this.date = date;
@@ -22,24 +25,17 @@ namespace stock_csduck
             this.volumn = volumn;
         }
 
-        internal void setAvg120(int avg120)
+        internal void setAvg(int[] avg)
         {
-            this.avg120 = avg120;
-        }
+            int idx = 0;
+            this.avg5 = avg[idx++];
+            this.avg20 = avg[idx++];
+            this.avg60 = avg[idx++];
+            this.avg120 = avg[idx++];
 
-        internal void setAvg60(int avg60)
-        {
-            this.avg60 = avg60;
-        }
-
-        internal void setAvg20(int avg20)
-        {
-            this.avg20 = avg20;
-        }
-
-        internal void setAvg5(int avg5)
-        {
-            this.avg5 = avg5;
+            rate5 = (double)avg5 / avg20;
+            rate20 = (double)avg20 / avg60;
+            rate60 = (double)avg60 / avg120;
         }
     }
 }

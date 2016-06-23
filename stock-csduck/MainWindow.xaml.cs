@@ -20,6 +20,8 @@ using System.Runtime.CompilerServices;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Threading;
+using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 
 namespace stock_csduck
 {
@@ -50,17 +52,43 @@ namespace stock_csduck
         Array m_arAccount;
         //*********************************************************
 
+        [DllImport("kernel32")]
+        private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
+        [DllImport("kernel32")]
+        private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retVal, int size, string filePath);
+
+
+
+        private readonly string FILE_PATH = "config.ini";
+
+        //// ini파일에 쓰기
+        //private void WriteIni_Click(object sender, EventArgs e)
+        //{
+        //    WritePrivateProfileString("섹션1", "키1", "값1", FilePath);
+        //}
+
+
         public MainWindow()
         {
             InitializeComponent();
 
 
             //주문 초기화
-            int nRet;
-            do
+            // 초기화 에러 발생시 메시지 출력
+            try
             {
-                nRet = m_TdUtil.TradeInit(0);
-            } while (nRet != 0);
+                int nRet = m_TdUtil.TradeInit(0);
+            }
+            catch(Exception e) {
+                addMsg("EXCEPTION", e.Message);
+                return;
+            }
+                                    
+            // 단일최대 주문금액
+            StringBuilder sb = new StringBuilder(255);
+            int maxBuy = GetPrivateProfileString("CONFIG", "MAX_BUY", "100000", sb, 255, FILE_PATH);
+            int sellPercent = GetPrivateProfileString("CONFIG", "SELL_PERCENT", "10", sb, 255, FILE_PATH);
+
 
             //주문이벤트등록
             m_CpFConclusion.Received += new DSCBO1Lib._IDibEvents_ReceivedEventHandler(CpFConclusion_OnReceived);
@@ -72,6 +100,12 @@ namespace stock_csduck
 
             // 종목 코드 얻기
             btnStockCode_Click(null, null);
+
+            //보유 종목 얻기
+            //CpTdNew5331A_Click(null, null);
+
+            //todo 보유 종목에 대해서, 팔지 여부를 판단한다. → 팔아야 하면 바로 실행
+            // 10% 이하.
 
         }
 
@@ -102,7 +136,8 @@ namespace stock_csduck
             CpTdNew5331B.IsEnabled = true;
 
             Object cnt = m_CpTdNew5331B.GetHeaderValue(0);
-            addMsg("cnt", cnt);            
+            addMsg("cnt", cnt);
+            
         }
 
         // https://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.callermembernameattribute(v=vs.110).aspx
@@ -129,6 +164,13 @@ namespace stock_csduck
          */
         private void CpTdNew5331A_Click(object sender, RoutedEventArgs e)
         {
+
+            SettingWindow cw = new SettingWindow();
+            cw.ShowInTaskbar = false;
+            cw.Owner = this;
+            cw.Show();
+
+
             addMsg();
             m_CpTdNew5331A.SetInputValue(0, mAccountNumber.Content);
 
@@ -149,6 +191,7 @@ namespace stock_csduck
 
         private void btnStockCode_Click(object sender, RoutedEventArgs e)
         {
+
             short cnt = m_CpStockCode.GetCount();
             addMsg("StockCodeCount", cnt.ToString());
 
@@ -161,8 +204,11 @@ namespace stock_csduck
                 //addMsg("code", code);
                 //addMsg("name", name);
                 //addMsg("fullCode", fullCode);
-                // todo: ^대신[a-z]{2}\d+ 제외
-                // todo : ^KODEX 제외
+
+
+                Regex regex = new Regex(@"KOSPI|KODEX|SMART|ARIRANG|KBSTAR|TIGER|KINDEX|KOSEF|대신B\d{3}");
+                if (regex.IsMatch(name.ToString())) continue;
+                
                 StockManager.addStock(code, name, fullCode);
             }
 
@@ -200,8 +246,7 @@ namespace stock_csduck
                 RequestCountUtil.add();
 
                 setPastPrice(st.code);
-                calculateAvg(st.code);
-                evaluateBuy(st.code);
+                StockManager.evaluateBuy(st.code);
 
                 if (st.buyPoint > 7)
                 {
@@ -288,39 +333,9 @@ namespace stock_csduck
                 StockPrice stockPrice = new StockPrice(date, priceStart, priceEnd, volumn);
 
                 StockManager.addStockPrice(code, stockPrice);
-
-                
             }
-        }
 
-
-
-        private void evaluateBuy(object code)
-        {
-            StockManager.evaluateBuy(code);
-
-            //IEnumerable<Stock> stockList = StockManager.getStockList().Cast<Stock>();
-            //foreach (Stock st in stockList)
-            //{
-            //    SortedList sl = st.getStockPriceList();
-            //    int listCnt = sl.Count;
-
-            //    for (int i = 0; i < listCnt; i++)
-            //    {
-            //        StockPrice sp = (StockPrice)sl.GetByIndex(i);
-            //        addMsg("date", sp.date);
-            //        addMsg("avg120", sp.avg120);
-            //        addMsg("avg60", sp.avg60);
-            //        addMsg("avg20", sp.avg20);
-            //        addMsg("avg5", sp.avg5);
-            //    }
-
-            //    addMsg("buyPoint", st.buyPoint);
-            //}
-        }
-
-        private void calculateAvg(object code)
-        {
+            // 모두 입력후에 평균을 계산한다.
             StockManager.calculateAvg(code);
         }
     }
